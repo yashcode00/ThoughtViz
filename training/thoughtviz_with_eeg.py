@@ -1,8 +1,9 @@
-import logging
+import sys
+# caution: path[0] is reserved for script path (or '' in REPL)
+sys.path.insert(1,"/Users/yash/Desktop/ADL-Project/ThoughtViz")
 import os
 import pickle
 import random
-
 from PIL import Image
 from keras import backend as K
 from keras.models import load_model
@@ -11,15 +12,16 @@ from keras.utils import to_categorical
 
 import utils.data_input_util as inutil
 from training.models.thoughtviz import *
-from utils.image_utils import *
+from utils.image_utils import * 
 
 
 def train_gan(dataset, input_noise_dim, batch_size, epochs, data_dir, saved_classifier_model_file, model_save_dir, output_dir, classifier_model_file):
 
     K.set_learning_phase(False)
     # folders containing images used for training
-    char_fonts_folders = ["./images/Char-Font"]
+    char_fonts_folders = ["/Users/yash/Desktop/ADL-Project/ThoughtViz/training/images/Char-Font"]
     num_classes = 10
+    img_input_shape = (64,64)
 
     feature_encoding_dim = 100
 
@@ -31,13 +33,19 @@ def train_gan(dataset, input_noise_dim, batch_size, epochs, data_dir, saved_clas
     if dataset == 1:
         x_train, y_train, x_test, y_test = inutil.load_char_data(char_fonts_folders, resize_shape=(28, 28))
         print("Loaded Characters Dataset.", )
+    
+    if dataset == 2:
+        imagenet_dir = "/Users/yash/Desktop/ADL-Project/ThoughtViz/training/images/ImageNet-Filtered"
+        x_train, y_train, x_test, y_test = inutil.load_image_data(imagenet_folder=imagenet_dir, patch_size=img_input_shape)
+
+    print(f"Shape of inputs is {x_train.shape}")
 
     adam_lr = 0.00005
     adam_beta_1 = 0.5
 
     c = load_model(classifier_model_file)
 
-    d = discriminator_model((28, 28), c)
+    d = discriminator_model(img_input_shape, c)
     d_optim = Adam(lr=adam_lr, beta_1=adam_beta_1)
     d.compile(loss=['binary_crossentropy','categorical_crossentropy'], optimizer=d_optim)
     d.trainable = True
@@ -52,11 +60,12 @@ def train_gan(dataset, input_noise_dim, batch_size, epochs, data_dir, saved_clas
     g.summary()
     d.summary()
     
-    eeg_data = pickle.load(open(os.path.join(data_dir, 'data.pkl'), "rb"))
+    eeg_data = pickle.load(open(os.path.join(data_dir, 'data.pkl'), "rb"), encoding='latin1')
+    # print(eeg_data)
     classifier = load_model(saved_classifier_model_file)
     classifier.summary()
-    x_test = eeg_data[b'x_test']
-    y_test = eeg_data[b'y_test']
+    x_test = eeg_data['x_test']
+    y_test = eeg_data['y_test']
     y_test = [np.argmax(y) for y in y_test]
     layer_index = 9
 
@@ -114,8 +123,8 @@ def train_gan(dataset, input_noise_dim, batch_size, epochs, data_dir, saved_clas
 
 
 def train():
-    folder_name_mapping = {0: 'Digit', 1: 'Char'}
-    dataset = 1
+    folder_name_mapping = {0: 'Digit', 1: 'Char', 2:'Image'}
+    dataset = 2
     batch_size = 100
     run_id = 1
     epochs = 500
@@ -127,10 +136,13 @@ def train():
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    classifier_model_file = os.path.join('./trained_classifier_models', 'classifier_' + folder_name_mapping[dataset].lower() + '.h5')
+    classifier_model_file = os.path.join('/Users/yash/Desktop/ADL-Project/ThoughtViz/training/models/trained_classifier_models', 'classifier_' + folder_name_mapping[dataset].lower() + '.h5')
 
-    eeg_data_dir = os.path.join('../data/eeg', folder_name_mapping[dataset].lower())
-    eeg_classifier_model_file = os.path.join('../models/eeg_models', folder_name_mapping[dataset].lower(), 'run_final.h5')
+    eeg_data_dir = os.path.join('/Users/yash/Desktop/ADL-Project/ThoughtViz/training/data/eeg', folder_name_mapping[dataset].lower())
+    eeg_classifier_model_file = os.path.join('/Users/yash/Desktop/ADL-Project/ThoughtViz/training/models/eeg_models', folder_name_mapping[dataset].lower(), 'run_final.h5')
+
+
+    eeg_data_dir = "/Users/yash/Desktop/ADL-Project/ThoughtViz/training/data/eeg/digit"
 
     train_gan(dataset=dataset, input_noise_dim=100, batch_size=batch_size, epochs=epochs, data_dir=eeg_data_dir, saved_classifier_model_file=eeg_classifier_model_file, model_save_dir=model_save_dir, output_dir=output_dir, classifier_model_file=classifier_model_file)
 

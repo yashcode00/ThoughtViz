@@ -78,7 +78,7 @@ def load_image_data(imagenet_folder, patch_size):
         image_class = IMAGE_CLASSES[image_folder]
         for image_file in os.listdir(os.path.join(imagenet_folder, image_folder)):
             file_path = os.path.join(imagenet_folder, image_folder, image_file)
-            img = Image.open(file_path).convert('RGB').resize(patch_size, PIL.Image.ANTIALIAS)
+            img = Image.open(file_path).convert('RGB').resize(patch_size, PIL.Image.Resampling.LANCZOS)
             img_array = np.array(img)
             img_array = img_array/255.0
             images.append(img_array)

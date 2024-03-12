@@ -3,9 +3,12 @@ import tarfile
 
 import numpy as np
 from six.moves import urllib
-import tensorflow as tf
 import math
 import sys
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+tf.compat.v1.enable_eager_execution()
+
 from keras.utils import to_categorical
 
 

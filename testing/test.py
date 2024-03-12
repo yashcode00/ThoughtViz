@@ -1,3 +1,7 @@
+import sys
+# caution: path[0] is reserved for script path (or '' in REPL)
+sys.path.insert(1,"/Users/yash/Desktop/ADL-Project/ThoughtViz")
+
 import pickle
 import random
 
@@ -81,7 +85,10 @@ class Tests():
 
 if __name__ == '__main__':
     tests = Tests()
+    path_to_generator = "/Users/yash/Desktop/ADL-Project/ThoughtViz/saved_models/thoughtviz_with_eeg/Char/run_1/generator_13"
+    classifier_path = ""
+    data_path = ""
     #tests.test_deligan_baseline('../models/gan_models/baseline/deligan/image/generator.model')
-    tests.test_deligan_final('../models/gan_models/final/image/generator.model',
-                       '../models/eeg_models/image/run_final.h5',
-                       '../data/eeg/image/data.pkl')
+    tests.test_deligan_final(path_to_generator,
+                       '/Users/yash/Desktop/ADL-Project/ThoughtViz/training/models/eeg_models/image/run_final.h5',
+                       '/Users/yash/Desktop/ADL-Project/ThoughtViz/training/data/eeg/image/data.pkl')

@@ -1,4 +1,6 @@
-import logging
+import sys
+# caution: path[0] is reserved for script path (or '' in REPL)
+sys.path.insert(1,"/Users/yash/Desktop/ADL-Project/ThoughtViz")
 import os
 from random import randint
 from keras import backend as K
@@ -18,7 +20,7 @@ def train_gan(input_noise_dim, batch_size, epochs, data_dir, saved_classifier_mo
 
     K.set_learning_phase(False)
     # folders containing images used for training
-    imagenet_folder = "./images/ImageNet-Filtered"
+    imagenet_folder = "/Users/yash/Desktop/ADL-Project/ThoughtViz/training/images/ImageNet-Filtered"
     num_classes = 10
 
     feature_encoding_dim = 100
@@ -26,6 +28,7 @@ def train_gan(input_noise_dim, batch_size, epochs, data_dir, saved_classifier_mo
     # load data and compile discriminator, generator models depending on the dataaset
     x_train, y_train, x_test, y_test = inutil.load_image_data(imagenet_folder, patch_size=(64, 64))
     print("Loaded Images Dataset.", )
+    print(f"shape of input is {x_train.shape}")
 
     g_adam_lr = 0.00003
     g_adam_beta_1 = 0.5
@@ -50,11 +53,11 @@ def train_gan(input_noise_dim, batch_size, epochs, data_dir, saved_classifier_mo
     g.summary()
     d.summary()
     
-    eeg_data = pickle.load(open(os.path.join(data_dir, 'data.pkl'), "rb"))
+    eeg_data = pickle.load(open(os.path.join(data_dir, 'data.pkl'), "rb"),encoding='latin1')
     classifier = load_model(saved_classifier_model_file)
     classifier.summary()
-    x_test = eeg_data[b'x_test']
-    y_test = eeg_data[b'y_test']
+    x_test = eeg_data['x_test']
+    y_test = eeg_data['y_test']
     y_test = np.array([np.argmax(y) for y in y_test])
     layer_index = 9
 
@@ -136,12 +139,12 @@ def train():
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    classifier_model_file = os.path.join('./trained_classifier_models', 'classifier_' + dataset.lower() + '.h5')
+    classifier_model_file = os.path.join('/Users/yash/Desktop/ADL-Project/ThoughtViz/training/models/trained_classifier_models', 'classifier_' + dataset.lower() + '.h5')
 
-    eeg_data_dir = os.path.join('../data/eeg/', dataset.lower())
-    eeg_classifier_model_file = os.path.join('../models/eeg_models', dataset.lower(), 'run_final.h5')
+    eeg_data_dir = os.path.join('/Users/yash/Desktop/ADL-Project/ThoughtViz/training/data/eeg', dataset.lower())
+    eeg_classifier_model_file = os.path.join('/Users/yash/Desktop/ADL-Project/ThoughtViz/training/models/eeg_models', dataset.lower(), 'run_final.h5')
 
-    train_gan(input_noise_dim=100, batch_size=batch_size, epochs=epochs, splits_save_dir=eeg_data_dir, saved_classifier_model_file=eeg_classifier_model_file, model_save_dir=model_save_dir, output_dir=output_dir, classifier_model_file=classifier_model_file)
+    train_gan(input_noise_dim=100, batch_size=batch_size, epochs=epochs, data_dir=eeg_data_dir, saved_classifier_model_file=eeg_classifier_model_file, model_save_dir=model_save_dir, output_dir=output_dir, classifier_model_file=classifier_model_file)
 
 
 if __name__ == '__main__':
